@@ -1,11 +1,8 @@
 #!name=WARP Endpoint IP Optimizer
 #!desc=Auto-test Cloudflare WARP endpoint IP latency and select the best node
-#!category=Tools
-#!system=ios,mac
-#!icon=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Cloudflare.png
 
 [Panel]
-warp-endpoint = script-name=warp-endpoint-test,update-interval=-1
+warp-endpoint = title="WARP Optimizer",content="Tap to start speed test",style=info,script-name=warp-endpoint-test,update-interval=-1
 
 [Script]
 warp-endpoint-test = type=generic,timeout=120,script-path=https://raw.githubusercontent.com/echoapus/warphole/refs/heads/main/warp_hyper.js,argument=ipv6=false&sample=15&timeout=3&concurrency=10
