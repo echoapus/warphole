@@ -1,55 +1,19 @@
-# WARP Endpoint IP 優選工具
+# WARP Endpoint IP 優選 — Surge 4 模組
 
-自動測試 Cloudflare WARP Endpoint IP 延遲，選擇最優節點。
-
-支援多種運行環境：**Python**、**Bash (Linux)**、**Surge 4 模組 (iOS/macOS)**。
+自動測試 Cloudflare WARP Endpoint IP 延遲，選擇最優節點並顯示於面板。
 
 ---
 
 ## 📦 檔案說明
 
-| 檔案 | 環境 | 說明 |
-|------|------|------|
-| `warp-yxip.py` | Python 3.6+ | 跨平台版本，可在 iOS (a-Shell / Pythonista) 和桌面環境運行 |
-| `warp-yxip.sh` | Linux / Bash | 下載並運行 CloudflareWarpSpeedTest 二進位 |
-| `warp-yxip.sgmodule` | Surge 4 (iOS/macOS) | Surge 模組定義 |
-| `warp-yxip.js` | Surge 4 (iOS/macOS) | Surge 測速腳本 |
+| 檔案 | 說明 |
+|------|------|
+| `warp-yxip.sgmodule` | Surge 4 模組定義 (iOS/macOS) |
+| `warp-yxip.js` | Surge 4 測速腳本 |
 
 ---
 
 ## 🚀 快速開始
-
-### Python 版
-
-```bash
-# IPv4 優選（預設）
-python3 warp-yxip.py
-
-# IPv6 優選
-python3 warp-yxip.py -6
-
-# 自定義參數
-python3 warp-yxip.py -n 3 -w 50 -s 200
-```
-
-**參數：**
-| 參數 | 預設 | 說明 |
-|------|------|------|
-| `-6` | — | 啟用 IPv6 優選 |
-| `-n` | 5 | 每個 IP 測試次數 |
-| `-w` | 30 | 並行線程數 |
-| `-s` | 100 | 每段抽取 IP 數 |
-
-### Bash 版
-
-```bash
-chmod +x warp-yxip.sh
-./warp-yxip.sh
-```
-
-透過互動式選單選擇 IPv4 或 IPv6 優選。
-
-### Surge 4 模組
 
 1. 將 `warp-yxip.sgmodule` 和 `warp-yxip.js` 放在同一目錄，或將 `.js` 上傳至可存取的 URL 並修改模組中的 `script-path`
 2. **Surge → 模組 → 安裝模組**
@@ -72,10 +36,6 @@ chmod +x warp-yxip.sh
 
 ## 🔧 原理
 
-### Python / Bash 版
-對 WARP Endpoint IP 發送 **WireGuard Initiation 封包**（UDP type=1），測量 RTT 和丟包率。
-
-### Surge 4 版
 因 Surge JS 環境無法發送 UDP，改用 **HTTP 連線時間**（TCP handshake）測量延遲。WARP 端點 IP 屬於 Cloudflare Anycast 網段，TCP 延遲與 UDP 延遲高度相關。
 
 ---
