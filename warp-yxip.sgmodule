@@ -25,4 +25,4 @@
 warp-endpoint = script-name=warp-endpoint-test, title="WARP 優選", content="點擊開始測速 ⚡", update-interval=-1, icon=bolt.circle.fill, icon-color=#F48120
 
 [Script]
-warp-endpoint-test = type=generic, timeout=120, script-path=warp-yxip.js, argument="ipv6=false&sample=15&timeout=3&concurrency=10"
+warp-endpoint-test = type=generic, timeout=120, script-path=https://raw.githubusercontent.com/echoapus/warphole/refs/heads/main/warp-yxip.js, argument="ipv6=false&sample=15&timeout=3&concurrency=10"
