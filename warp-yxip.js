@@ -1,20 +1,21 @@
 /*
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- *  WARP Endpoint IP 優選 — Surge 4 腳本
+ *  WARP Endpoint IP Optimizer — Surge 4 Script
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  *
- *  原理：
- *    對 Cloudflare WARP Endpoint IP 段發送 HTTP 請求，
- *    透過連線建立時間（TCP handshake）估算網路延遲。
- *    因為 WARP WireGuard 端點與 HTTP 服務共用相同的
- *    Cloudflare Anycast IP，TCP 延遲與 UDP 延遲高度相關。
+ *  How it works:
+ *    Sends HTTP requests to Cloudflare WARP endpoint IP ranges
+ *    and measures latency via TCP handshake connection time.
+ *    Since WARP WireGuard endpoints share the same Cloudflare
+ *    Anycast IPs as the HTTP service, TCP latency correlates
+ *    closely with UDP latency.
  *
- *  環境：Surge 4+ (iOS / macOS)
- *  腳本類型：generic（面板觸發）
+ *  Environment: Surge 4+ (iOS / macOS)
+ *  Script type: generic (panel trigger)
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  */
 
-// ── 常量 ──────────────────────────────────────────────────
+// ── Constants ─────────────────────────────────────────────
 
 const WARP_PORT = 2408;
 const STORE_KEY = "warp_yxip_results";
@@ -30,7 +31,7 @@ const IPV6_RANGES = [
     "2606:4700:d0::", "2606:4700:d1::",
 ];
 
-// ── 解析參數 ──────────────────────────────────────────────
+// ── Parse Arguments ───────────────────────────────────────
 
 function parseArgs() {
     const defaults = {
@@ -52,13 +53,13 @@ function parseArgs() {
             else if (key === "concurrency") defaults.concurrency = parseInt(val, 10) || defaults.concurrency;
         }
     } catch (e) {
-        console.log(`[WARP] 參數解析失敗: ${e.message}`);
+        console.log(`[WARP] Failed to parse arguments: ${e.message}`);
     }
 
     return defaults;
 }
 
-// ── IP 生成 ───────────────────────────────────────────────
+// ── IP Generation ─────────────────────────────────────────
 
 function randomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -99,7 +100,7 @@ function generateIPv6(sample) {
     return shuffle(ips);
 }
 
-// ── 單 IP 測速 ────────────────────────────────────────────
+// ── Single IP Test ────────────────────────────────────────
 
 function testEndpoint(ip, timeout) {
     return new Promise((resolve) => {
@@ -121,11 +122,11 @@ function testEndpoint(ip, timeout) {
                 const timeoutMs = timeout * 1000;
 
                 if (error) {
-                    // 如果耗時接近超時值，視為不可達
+                    // If elapsed time is close to timeout, treat as unreachable
                     if (elapsed >= timeoutMs - 200) {
                         resolve({ ip, port: WARP_PORT, latency: null, status: "timeout" });
                     } else {
-                        // 連線被拒/重設 — 仍然反映真實 RTT
+                        // Connection refused/reset — still reflects real RTT
                         resolve({ ip, port: WARP_PORT, latency: elapsed, status: "refused" });
                     }
                 } else {
@@ -141,7 +142,7 @@ function testEndpoint(ip, timeout) {
     });
 }
 
-// ── 並行控制 ──────────────────────────────────────────────
+// ── Concurrency Control ───────────────────────────────────
 
 async function runWithConcurrency(tasks, concurrency) {
     const results = [];
@@ -163,7 +164,7 @@ async function runWithConcurrency(tasks, concurrency) {
     return Promise.all(results);
 }
 
-// ── 格式化輸出 ────────────────────────────────────────────
+// ── Format Output ─────────────────────────────────────────
 
 function formatResults(valid, total, ipv6) {
     const topN = valid.slice(0, 10);
@@ -173,12 +174,12 @@ function formatResults(valid, total, ipv6) {
         (r, i) => `${i + 1}. ${r.ip}:${r.port}  ${r.latency}ms`
     );
 
-    const header = `🏆 最優: ${best.ip}:${best.port} (${best.latency}ms)`;
-    const stats = `📊 測試 ${total} 個${ipv6 ? " IPv6" : ""} | 有效 ${valid.length} 個`;
-    const time = `🕐 ${new Date().toLocaleString("zh-TW")}`;
+    const header = `🏆 Best: ${best.ip}:${best.port} (${best.latency}ms)`;
+    const stats = `📊 Tested ${total}${ipv6 ? " IPv6" : ""} | Valid ${valid.length}`;
+    const time = `🕐 ${new Date().toISOString().replace("T", " ").slice(0, 19)}`;
 
     return {
-        panelTitle: "WARP 優選",
+        panelTitle: "WARP Optimizer",
         panelContent: `${header}\n${stats}\n${time}`,
         fullList: lines.join("\n"),
         bestEndpoint: `${best.ip}:${best.port}`,
@@ -186,50 +187,50 @@ function formatResults(valid, total, ipv6) {
     };
 }
 
-// ── 主流程 ────────────────────────────────────────────────
+// ── Main ──────────────────────────────────────────────────
 
 (async () => {
     const config = parseArgs();
     const startTime = Date.now();
 
-    console.log(`[WARP] 開始測速 — IPv${config.ipv6 ? "6" : "4"}, 抽樣=${config.sample}, 並行=${config.concurrency}`);
+    console.log(`[WARP] Starting test — IPv${config.ipv6 ? "6" : "4"}, sample=${config.sample}, concurrency=${config.concurrency}`);
 
     try {
-        // 1. 生成候選 IP
+        // 1. Generate candidate IPs
         const ips = config.ipv6
             ? generateIPv6(config.sample)
             : generateIPv4(config.sample);
 
-        console.log(`[WARP] 共 ${ips.length} 個候選 IP`);
+        console.log(`[WARP] ${ips.length} candidate IPs`);
 
-        // 2. 並行測速
+        // 2. Run tests concurrently
         const tasks = ips.map((ip) => () => testEndpoint(ip, config.timeout));
         const results = await runWithConcurrency(tasks, config.concurrency);
 
-        // 3. 篩選有效結果，按延遲排序
+        // 3. Filter valid results and sort by latency
         const valid = results
             .filter((r) => r.latency !== null && r.latency > 0)
             .sort((a, b) => a.latency - b.latency);
 
         const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-        console.log(`[WARP] 測速完成，耗時 ${elapsed}s，有效 ${valid.length}/${results.length}`);
+        console.log(`[WARP] Done in ${elapsed}s, valid ${valid.length}/${results.length}`);
 
-        // 4. 無有效結果
+        // 4. No valid results
         if (valid.length === 0) {
-            $notification.post("WARP 優選", "❌ 測速失敗", "未找到可用端點，請檢查網路後重試");
+            $notification.post("WARP Optimizer", "❌ Test Failed", "No reachable endpoints found. Please check your network and try again.");
             $done({
-                title: "WARP 優選",
-                content: "❌ 未找到可用端點\n請檢查網路連線後重試",
+                title: "WARP Optimizer",
+                content: "❌ No reachable endpoints\nPlease check your network and try again",
                 icon: "xmark.circle.fill",
                 "icon-color": "#FF3B30",
             });
             return;
         }
 
-        // 5. 格式化並輸出
+        // 5. Format results
         const output = formatResults(valid, ips.length, config.ipv6);
 
-        // 6. 持久化儲存結果
+        // 6. Persist results
         const storedData = {
             best: output.bestEndpoint,
             latency: output.bestLatency,
@@ -244,14 +245,14 @@ function formatResults(valid, total, ipv6) {
         };
         $persistentStore.write(JSON.stringify(storedData), STORE_KEY);
 
-        // 7. 推送通知（含完整 Top 10）
+        // 7. Push notification (with full Top 10)
         $notification.post(
-            "WARP 優選完成 ✅",
-            `最優端點: ${output.bestEndpoint} (${output.bestLatency}ms)`,
-            `${output.fullList}\n\n耗時: ${elapsed}s | 使用方法：將 WireGuard Endpoint 替換為上方最優 IP`
+            "WARP Optimizer ✅",
+            `Best: ${output.bestEndpoint} (${output.bestLatency}ms)`,
+            `${output.fullList}\n\nElapsed: ${elapsed}s | Replace your WireGuard Endpoint with the best IP above`
         );
 
-        // 8. 更新面板
+        // 8. Update panel
         $done({
             title: output.panelTitle,
             content: output.panelContent,
@@ -259,11 +260,11 @@ function formatResults(valid, total, ipv6) {
             "icon-color": "#F48120",
         });
     } catch (e) {
-        console.log(`[WARP] 錯誤: ${e.message}\n${e.stack}`);
-        $notification.post("WARP 優選", "❌ 腳本錯誤", e.message);
+        console.log(`[WARP] Error: ${e.message}\n${e.stack}`);
+        $notification.post("WARP Optimizer", "❌ Script Error", e.message);
         $done({
-            title: "WARP 優選",
-            content: `❌ 錯誤: ${e.message}`,
+            title: "WARP Optimizer",
+            content: `❌ Error: ${e.message}`,
             icon: "xmark.circle.fill",
             "icon-color": "#FF3B30",
         });

@@ -1,28 +1,11 @@
-#!name=WARP Endpoint IP 優選
-#!desc=自動測試 Cloudflare WARP Endpoint IP 延遲，選擇最優節點並顯示於面板
+#!name=WARP Endpoint IP Optimizer
+#!desc=Auto-test Cloudflare WARP endpoint IP latency and select the best node
 #!category=Tools
 #!system=ios,mac
 #!icon=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Cloudflare.png
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  WARP Endpoint IP 優選 — Surge 4 模組
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#
-#  使用方法：
-#    1. 將本模組 (warp-yxip.sgmodule) 和腳本 (warp-yxip.js) 放入
-#       Surge 可存取的位置（本地或遠端 URL）
-#    2. Surge → 模組 → 新增本地模組 / 安裝模組（URL）
-#    3. 點擊面板中的「WARP 優選」即可開始測速
-#
-#  參數說明（可在 argument 中以 & 分隔傳入）：
-#    ipv6=true      啟用 IPv6 測試（預設 false）
-#    sample=15      每段 IP 抽取數量（預設 15）
-#    timeout=3      單次測試超時秒數（預設 3）
-#    concurrency=10 並行測試數量（預設 10）
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 [Panel]
-warp-endpoint = script-name=warp-endpoint-test, title="WARP 優選", content="點擊開始測速 ⚡", update-interval=-1, icon=bolt.circle.fill, icon-color=#F48120
+warp-endpoint = script-name=warp-endpoint-test,update-interval=-1
 
 [Script]
-warp-endpoint-test = type=generic, timeout=120, script-path=https://raw.githubusercontent.com/echoapus/warphole/refs/heads/main/warp-yxip.js, argument="ipv6=false&sample=15&timeout=3&concurrency=10"
+warp-endpoint-test = type=generic,timeout=120,script-path=https://raw.githubusercontent.com/echoapus/warphole/refs/heads/main/warp-yxip.js,argument=ipv6=false&sample=15&timeout=3&concurrency=10

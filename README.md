@@ -1,68 +1,71 @@
-# WARP Endpoint IP 優選 — Surge 4 模組
+# WARP Endpoint IP Optimizer — Surge 4 Module
 
-自動測試 Cloudflare WARP Endpoint IP 延遲，選擇最優節點並顯示於面板。
-
----
-
-## 📦 檔案說明
-
-| 檔案 | 說明 |
-|------|------|
-| `warp-yxip.sgmodule` | Surge 4 模組定義 (iOS/macOS) |
-| `warp-yxip.js` | Surge 4 測速腳本 |
+Automatically test Cloudflare WARP endpoint IP latency and select the best node, displayed on a Surge panel.
 
 ---
 
-## 🚀 快速開始
+## 📦 Files
 
-1. 將 `warp-yxip.sgmodule` 和 `warp-yxip.js` 放在同一目錄，或將 `.js` 上傳至可存取的 URL 並修改模組中的 `script-path`
-2. **Surge → 模組 → 安裝模組**
-3. 點擊面板中的「**WARP 優選**」開始測速
-4. 測速完成後：
-   - 面板顯示最優端點和延遲
-   - 推送通知包含完整 Top 10
-   - 結果持久化儲存
-
-**可調參數（在 `.sgmodule` 的 `argument` 中修改）：**
-
-| 參數 | 預設 | 說明 |
-|------|------|------|
-| `ipv6` | `false` | 設為 `true` 啟用 IPv6 |
-| `sample` | `15` | 每段 IP 抽取數量 |
-| `timeout` | `3` | 單次超時（秒） |
-| `concurrency` | `10` | 並行測試數 |
+| File | Description |
+|------|-------------|
+| `warp-yxip.sgmodule` | Surge 4 module definition (iOS/macOS) |
+| `warp-yxip.js` | Surge 4 speed test script |
 
 ---
 
-## 🔧 原理
+## 🚀 Quick Start
 
-因 Surge JS 環境無法發送 UDP，改用 **HTTP 連線時間**（TCP handshake）測量延遲。WARP 端點 IP 屬於 Cloudflare Anycast 網段，TCP 延遲與 UDP 延遲高度相關。
+1. **Surge → Modules → Install Module from URL**
+2. Enter the raw URL of the sgmodule file:
+   ```
+   https://raw.githubusercontent.com/echoapus/warphole/refs/heads/main/warp-yxip.sgmodule
+   ```
+3. Tap the **"WARP Optimizer"** panel to start the speed test
+4. When the test completes:
+   - The panel shows the best endpoint and latency
+   - A push notification contains the full Top 10 results
+   - Results are persisted locally
+
+**Configurable Parameters (modify `argument` in the `.sgmodule` file):**
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `ipv6` | `false` | Set to `true` to enable IPv6 testing |
+| `sample` | `15` | Number of IPs sampled per range |
+| `timeout` | `3` | Per-test timeout in seconds |
+| `concurrency` | `10` | Number of parallel tests |
 
 ---
 
-## 📋 測試的 IP 段
+## 🔧 How It Works
 
-**IPv4：**
-- `162.159.192.0/24`、`162.159.193.0/24`
-- `162.159.195.0/24`、`162.159.204.0/24`
-- `188.114.96.0/24`、`188.114.97.0/24`
-- `188.114.98.0/24`、`188.114.99.0/24`
+Since the Surge JS environment cannot send UDP packets, this script measures latency via **HTTP connection time** (TCP handshake). WARP endpoint IPs belong to Cloudflare's Anycast network, so TCP latency correlates closely with UDP latency.
 
-**IPv6：**
+---
+
+## 📋 Tested IP Ranges
+
+**IPv4:**
+- `162.159.192.0/24`, `162.159.193.0/24`
+- `162.159.195.0/24`, `162.159.204.0/24`
+- `188.114.96.0/24`, `188.114.97.0/24`
+- `188.114.98.0/24`, `188.114.99.0/24`
+
+**IPv6:**
 - `2606:4700:d0::/48`
 - `2606:4700:d1::/48`
 
 ---
 
-## 📌 使用方法
+## 📌 Usage
 
-測速完成後，將 WireGuard 配置中的 Endpoint：
+After the speed test completes, replace the WireGuard Endpoint in your configuration:
 
 ```
 engage.cloudflareclient.com:2408
 ```
 
-替換為測速結果中的最優 IP（例如 `162.159.192.123:2408`）。
+with the best IP from the results (e.g. `162.159.192.123:2408`).
 
 ---
 
