@@ -8,4 +8,4 @@
 warp-endpoint = script-name=warp-endpoint-test,update-interval=-1
 
 [Script]
-warp-endpoint-test = type=generic,timeout=120,script-path=https://raw.githubusercontent.com/echoapus/warphole/refs/heads/main/warp-yxip.js,argument=ipv6=false&sample=15&timeout=3&concurrency=10
+warp-endpoint-test = type=generic,timeout=120,script-path=https://raw.githubusercontent.com/echoapus/warphole/refs/heads/main/warp_hyper.js,argument=ipv6=false&sample=15&timeout=3&concurrency=10

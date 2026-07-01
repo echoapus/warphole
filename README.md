@@ -8,8 +8,8 @@ Automatically test Cloudflare WARP endpoint IP latency and select the best node,
 
 | File | Description |
 |------|-------------|
-| `warp-yxip.sgmodule` | Surge 4 module definition (iOS/macOS) |
-| `warp-yxip.js` | Surge 4 speed test script |
+| `warp_hyper.sgmodule` | Surge 4 module definition (iOS/macOS) |
+| `warp_hyper.js` | Surge 4 speed test script |
 
 ---
 
@@ -18,7 +18,7 @@ Automatically test Cloudflare WARP endpoint IP latency and select the best node,
 1. **Surge → Modules → Install Module from URL**
 2. Enter the raw URL of the sgmodule file:
    ```
-   https://raw.githubusercontent.com/echoapus/warphole/refs/heads/main/warp-yxip.sgmodule
+   https://raw.githubusercontent.com/echoapus/warphole/refs/heads/main/warp_hyper.sgmodule
    ```
 3. Tap the **"WARP Optimizer"** panel to start the speed test
 4. When the test completes:
