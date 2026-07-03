@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WARPHole — Cloudflare WARP Endpoint Optimizer</title>
+  <meta name="description" content="Find the fastest Cloudflare WARP endpoint IP ranges directly in your browser. Fully client-side.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+  <div class="glow-bg"></div>
+  
+  <div class="app-container">
+    <header class="app-header">
+      <div class="logo-area">
+        <span class="logo-icon">⚡</span>
+        <h1 class="logo-text">WARP<span class="logo-highlight">Hole</span></h1>
+      </div>
+      <p class="tagline">Optimize your Cloudflare WARP connection by finding the lowest latency Anycast IPs directly from your device</p>
+    </header>
+
+    <main class="app-content">
+      <!-- Config Panel -->
+      <section class="card config-card" id="config-panel">
+        <h2 class="card-title">Test Configuration</h2>
+        <div class="config-grid">
+          <div class="config-group">
+            <label for="ip-version">IP Version</label>
+            <div class="toggle-group">
+              <input type="radio" id="ipv4-radio" name="ip-version" value="v4" checked>
+              <label for="ipv4-radio" class="toggle-btn">IPv4</label>
+              <input type="radio" id="ipv6-radio" name="ip-version" value="v6">
+              <label for="ipv6-radio" class="toggle-btn">IPv6</label>
+            </div>
+          </div>
+
+          <div class="config-group">
+            <label for="sample-range">Sample Size (per range)</label>
+            <div class="range-value-container">
+              <input type="range" id="sample-range" min="5" max="50" value="15" step="5">
+              <span class="range-display" id="sample-display">15</span>
+            </div>
+            <span class="helper-text">Total IPs to test: <span id="total-ips-preview">120</span></span>
+          </div>
+
+          <div class="config-group">
+            <label for="concurrency-range">Concurrency (Parallel)</label>
+            <div class="range-value-container">
+              <input type="range" id="concurrency-range" min="2" max="30" value="10" step="2">
+              <span class="range-display" id="concurrency-display">10</span>
+            </div>
+            <span class="helper-text">Simultaneous connection probes</span>
+          </div>
+
+          <div class="config-group">
+            <label for="timeout-range">Timeout (seconds)</label>
+            <div class="range-value-container">
+              <input type="range" id="timeout-range" min="1" max="5" value="3" step="0.5">
+              <span class="range-display" id="timeout-display">3.0s</span>
+            </div>
+            <span class="helper-text">Max time to wait for each probe</span>
+          </div>
+        </div>
+
+        <!-- Protocol Warning / Note -->
+        <div class="protocol-banner" id="protocol-banner">
+          <span class="banner-icon">ℹ️</span>
+          <span class="banner-text" id="protocol-banner-text">Loading protocol details...</span>
+        </div>
+
+        <div class="action-buttons">
+          <button id="btn-start-test" class="btn btn-primary">
+            <span class="btn-icon">⚡</span>
+            <div class="btn-text-wrapper">
+              <span class="btn-title">Start Latency Scan</span>
+              <span class="btn-subtitle">Test directly from your browser</span>
+            </div>
+          </button>
+        </div>
+      </section>
+
+      <!-- Status Panel (Hidden by default, shown during test) -->
+      <section class="card status-card hidden" id="status-panel">
+        <div class="status-header">
+          <h2 class="card-title status-title" id="status-message">Testing endpoints...</h2>
+          <button id="btn-cancel" class="btn-cancel">Cancel</button>
+        </div>
+        <div class="progress-bar-wrapper">
+          <div class="progress-bar-fill" id="progress-bar" style="width: 0%"></div>
+        </div>
+        <div class="status-metrics">
+          <div class="metric-box">
+            <span class="metric-label">Tested</span>
+            <span class="metric-value" id="stat-tested">0 / 0</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-label">Valid Endpoints</span>
+            <span class="metric-value text-success" id="stat-valid">0</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-label">Best Latency</span>
+            <span class="metric-value text-accent" id="stat-best">-</span>
+          </div>
+        </div>
+        <div class="current-ip-log" id="status-log">Initializing test runner...</div>
+      </section>
+
+      <!-- Results Panel -->
+      <section class="card results-card hidden" id="results-panel">
+        <div class="results-header">
+          <h2 class="card-title">Test Results</h2>
+          <div class="export-actions">
+            <button id="btn-copy-best" class="btn-pill">📋 Copy Best IP</button>
+            <button id="btn-copy-wg" class="btn-pill">⚙️ WireGuard Config</button>
+          </div>
+        </div>
+
+        <div class="best-result-hero" id="best-hero">
+          <div class="hero-label">RECOMMENDED ENDPOINT</div>
+          <div class="hero-ip" id="best-hero-endpoint">188.114.96.128:2408</div>
+          <div class="hero-meta">
+            <span class="hero-latency" id="best-hero-latency">2 ms</span>
+            <span class="hero-divider">|</span>
+            <span class="hero-source" id="best-hero-source">Client Scan</span>
+          </div>
+        </div>
+
+        <div class="results-table-container">
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th style="width: 80px;">Rank</th>
+                <th>Endpoint IP</th>
+                <th style="width: 140px;">Latency</th>
+                <th>Status</th>
+                <th style="width: 100px; text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="results-table-body">
+              <!-- Result rows inserted dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p>WARPHole is a fully client-side tool. Latency is measured directly from your browser to Cloudflare Anycast IP ranges.</p>
+      <p class="footer-links">
+        <a href="https://github.com/echoapus/warphole" target="_blank" rel="noopener">Project Repository</a>
+      </p>
+    </footer>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast hidden" id="toast-notification">Copied to clipboard!</div>
+
+  <script src="app.js"></script>
+</body>
+</html>

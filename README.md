@@ -10,6 +10,7 @@ Automatically test Cloudflare WARP endpoint IP latency and select the best node,
 |------|-------------|
 | `warp_hyper.sgmodule` | Surge 4 module definition (iOS/macOS) |
 | `warp_hyper.js` | Surge 4 speed test script |
+| `warp_hyper.sh` | Bash CLI version for local terminals |
 
 ---
 
@@ -25,6 +26,16 @@ Automatically test Cloudflare WARP endpoint IP latency and select the best node,
    - The panel shows the best endpoint and latency
    - A push notification contains the full Top 10 results
    - Results are persisted locally
+
+## 🐚 Bash Version
+
+Run the local CLI version from a terminal:
+
+```bash
+bash warp_hyper.sh --sample 15 --timeout 3 --concurrency 10
+```
+
+Add `--ipv6` to test IPv6 ranges, or `--self-test` for a quick sanity check.
 
 **Configurable Parameters (modify `argument` in the `.sgmodule` file):**
 
